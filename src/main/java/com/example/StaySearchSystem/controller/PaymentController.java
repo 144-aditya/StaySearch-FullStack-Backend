@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/staysearch")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
 public class PaymentController {
 
     @Autowired
@@ -32,13 +32,30 @@ public class PaymentController {
     @PostMapping("/payments")
     public ResponseEntity<Map<String, Object>> createPayment(@RequestBody BookingPaymentDTO dto) {
 
-        // User
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhone(dto.getPhone());
-        user.setAddress(dto.getAddress());
-        user = userRepository.save(user);
+        User user;
+
+        // Check if userId is provided (logged-in user)
+        if (dto.getUserId() != null) {
+            // Use existing user
+            user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + dto.getUserId()));
+
+            // Update user info if needed
+            user.setName(dto.getName());
+            user.setEmail(dto.getEmail());
+            user.setPhone(dto.getPhone());
+            user.setAddress(dto.getAddress());
+            user = userRepository.save(user);
+        } else {
+            // Create new user (for non-logged-in users)
+            user = new User();
+            user.setName(dto.getName());
+            user.setEmail(dto.getEmail());
+            user.setPhone(dto.getPhone());
+            user.setAddress(dto.getAddress());
+            user.setPassword("default123");  // ✅ SIRF YEH EK LINE ADD KI HAI
+            user = userRepository.save(user);
+        }
 
         // Booking
         Booking booking = new Booking();
@@ -60,7 +77,7 @@ public class PaymentController {
         payment.setBooking(booking);
         paymentRepository.save(payment);
 
-        // 4️⃣ Response with userId + bookingId
+        // Response with userId + bookingId
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Booking & Payment Successful");
         response.put("userId", user.getId());

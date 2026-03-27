@@ -2,6 +2,9 @@ package com.example.StaySearchSystem.dto;
 
 public class BookingPaymentDTO {
 
+    // User ID (to link booking with logged-in user)
+    private Long userId;
+
     // USER
     private String name;
     private String email;
@@ -22,6 +25,10 @@ public class BookingPaymentDTO {
     private String paymentStatus;
 
     // ===== GETTERS & SETTERS =====
+
+    // ✅ New getter/setter for userId
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

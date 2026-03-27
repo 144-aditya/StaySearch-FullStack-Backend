@@ -28,8 +28,9 @@ public class Booking {
 
     private String paymentMethod;
 
+    //  nullable = true (pehle false tha)
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)  //change
     private User user;
 
     // ---------- Getters & Setters ----------

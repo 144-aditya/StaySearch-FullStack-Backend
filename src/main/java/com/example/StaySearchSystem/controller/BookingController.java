@@ -16,19 +16,20 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    // Create Booking
+    // Create Booking (with optional userId in request body)
     @PostMapping("/bookings")
     public Booking createBooking(@RequestBody Booking booking) {
+        // If booking has user, use it; otherwise create without user
         return bookingService.createBooking(booking);
     }
 
-    // My Bookings
+    // My Bookings - No change
     @GetMapping("/bookings/user/{userId}")
     public List<Booking> getUserBookings(@PathVariable Long userId) {
         return bookingService.getUserBookings(userId);
     }
 
-    //Cancel Booking
+    // Cancel Booking - No change
     @PutMapping("/bookings/{id}/cancel")
     public void cancelBooking(@PathVariable Long id) {
         bookingService.cancelBooking(id);
