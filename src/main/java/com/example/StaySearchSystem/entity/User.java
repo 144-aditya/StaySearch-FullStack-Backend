@@ -1,5 +1,6 @@
 package com.example.StaySearchSystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -21,17 +22,18 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String address;
 
-    // Password
+    // Password (HIDE in API)
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
-    //  Role (USER/ADMIN)
+    // Role (USER/ADMIN)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER;
 
-    //  Created timestamp
-    @Column(name = "created_at")
+    // Created timestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     // Updated timestamp
@@ -48,17 +50,11 @@ public class User {
         this.address = address;
         this.password = password;
         this.role = role;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -67,6 +63,10 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getEmail() {
@@ -113,19 +113,11 @@ public class User {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    // Auto-set timestamps
+    // Auto timestamps (ONLY here, not constructor)
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
