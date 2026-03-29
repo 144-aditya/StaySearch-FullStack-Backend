@@ -7,6 +7,7 @@ import com.example.StaySearchSystem.entity.Role;
 import com.example.StaySearchSystem.entity.User;
 import com.example.StaySearchSystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +15,9 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    // BCrypt Password Encoder (Production Ready)
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // Simple token generation (you can upgrade to JWT later)
     private String generateToken(Long userId, String email, String role) {
@@ -21,7 +25,7 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
-        //Validate input
+        // Validate input
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
             throw new RuntimeException("Email is required");
         }
@@ -46,8 +50,8 @@ public class AuthService {
         user.setPhone(request.getPhone());
         user.setAddress(request.getAddress());
 
-        // Encode password
-        user.setPassword(encodePassword(request.getPassword()));
+        // Encode password with BCrypt (PostgreSQL compatible)
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         // Set role
         if (request.getRole() != null && request.getRole().equalsIgnoreCase("ADMIN")) {
@@ -85,8 +89,8 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        // Check password
-        if (!checkPassword(request.getPassword(), user.getPassword())) {
+        // Check password with BCrypt
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
@@ -100,18 +104,5 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole().toString()
         );
-    }
-
-    // Simple password encoding (for development only)
-    // In production, use BCryptPasswordEncoder
-    private String encodePassword(String password) {
-        // Simple encoding - just for demo
-        // Replace with BCrypt in production
-        return password; // WARNING: Don't use this in production!
-    }
-
-    private boolean checkPassword(String rawPassword, String encodedPassword) {
-        // Simple check - just for demo
-        return rawPassword.equals(encodedPassword); // WARNING: Don't use this in production!
     }
 }

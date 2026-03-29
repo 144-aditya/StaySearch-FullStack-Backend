@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: staysearch_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: staysearch_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - staysearch_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d staysearch_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Application
+  app:
+    build: .
+    container_name: staysearch_app
+    restart: always
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/staysearch_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+    networks:
+      - staysearch_network
+    volumes:
+      - ./logs:/app/logs
+
+  # pgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: staysearch_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@staysearch.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_db
+    networks:
+      - staysearch_network
+
+volumes:
+  postgres_data:
+
+networks:
+  staysearch_network:
+    driver: bridge
